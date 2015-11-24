@@ -1,0 +1,7 @@
+set(_CATKIN_CURRENT_PACKAGE "odroid_machine")
+set(odroid_machine_MAINTAINER "odroid <odroid@todo.todo>")
+set(odroid_machine_DEPRECATED "")
+set(odroid_machine_VERSION "0.0.0")
+set(odroid_machine_BUILD_DEPENDS "roscpp" "rospy" "std_msgs")
+set(odroid_machine_RUN_DEPENDS "roscpp" "rospy" "std_msgs")
+set(odroid_machine_BUILDTOOL_DEPENDS "catkin")

@@ -1,0 +1,10 @@
+<launch>
+  <arg name="mname" default="zumyX" />
+  
+  <include file="$(find odroid_machine)/launch/odroid_machine.launch">
+    <arg name="mname" value="$(arg mname)" />
+  </include>
+
+  <node machine="$(arg mname)" ns="$(arg mname)" name="zumy_ros_bridge" pkg="ros_zumy" type="zumy_ros_bridge.py"  output="screen" >
+  </node>
+</launch>

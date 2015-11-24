@@ -1,0 +1,8 @@
+<launch>
+  <arg name="mname" default="zumyX" />
+
+  <arg name="odroid_machine_path" default="/home/glew/coop_slam_workspace/src/odroid_machine" />
+  
+  <machine name="$(arg mname)" address="$(arg mname).local" user="zumy" timeout="5.0" env-loader="$(arg odroid_machine_path)/launch/ros_env_loader.bash" />
+</launch>
+

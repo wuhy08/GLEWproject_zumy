@@ -1,0 +1,8 @@
+prefix=/home/cc/ee106a/fa15/class/ee106a-cn/Downloads/GLEWproject_zumy/install
+
+Name: ros_zumy
+Description: Description of ros_zumy
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/cc/ee106a/fa15/class/ee106a-cn/Downloads/GLEWproject_zumy/install/lib 
+Requires: 

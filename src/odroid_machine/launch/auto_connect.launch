@@ -1,0 +1,7 @@
+<launch>
+
+  <include file="$(find zeroconf_avahi)/launch/ros_browser.launch" />
+
+  <node name="autoConnect" pkg="odroid_machine" type="auto_connect.py" respawn="false" output="screen" />
+
+</launch>

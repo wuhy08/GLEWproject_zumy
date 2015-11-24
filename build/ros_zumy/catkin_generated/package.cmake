@@ -1,0 +1,7 @@
+set(_CATKIN_CURRENT_PACKAGE "ros_zumy")
+set(ros_zumy_MAINTAINER "odroid <odroid@todo.todo>")
+set(ros_zumy_DEPRECATED "")
+set(ros_zumy_VERSION "0.0.0")
+set(ros_zumy_BUILD_DEPENDS "roscpp" "rospy" "std_msgs")
+set(ros_zumy_RUN_DEPENDS "roscpp" "rospy" "std_msgs")
+set(ros_zumy_BUILDTOOL_DEPENDS "catkin")

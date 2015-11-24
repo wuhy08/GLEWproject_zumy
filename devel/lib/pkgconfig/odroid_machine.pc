@@ -1,0 +1,8 @@
+prefix=/home/cc/ee106a/fa15/class/ee106a-cn/Downloads/GLEWproject_zumy/devel
+
+Name: odroid_machine
+Description: Description of odroid_machine
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/cc/ee106a/fa15/class/ee106a-cn/Downloads/GLEWproject_zumy/devel/lib 
+Requires: 
