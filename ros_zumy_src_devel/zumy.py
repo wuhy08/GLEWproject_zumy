@@ -5,7 +5,7 @@ Created on Wed Oct 29 06:39:30 2014
 @author: ajc
 """
 
-import mbedrpc
+from mbedrpc import *
 import threading
 import time
 from serial import SerialException
@@ -28,16 +28,16 @@ enc_names = ['l_enc','r_enc']
 
 class Zumy:
     def __init__(self, dev='/dev/ttyACM0'):
-        self.mbed=mbedrpc.SerialRPC(dev, 115200)
-        a1=mbedrpc.PwmOut(self.mbed, p21)
-        a2=mbedrpc.PwmOut(self.mbed, p22)
-        b1=mbedrpc.PwmOut(self.mbed, p23)
-        b2=mbedrpc.PwmOut(self.mbed, p24)
-        self.m_right = Motor(a1, a2)
-        self.m_left = Motor(b1, b2)
-        self.an = mbedrpc.AnalogIn(self.mbed, p20)
-        self.imu_vars = [mbedrpc.RPCVariable(self.mbed,name) for name in imu_names]
-        self.enc_vars = [mbedrpc.RPCVariable(self.mbed,name) for name in enc_names]
+        self.mbed=SerialRPC(dev, 115200)
+        a1=PwmOut(self.mbed, p21)
+        a2=PwmOut(self.mbed, p22)
+        b1=PwmOut(self.mbed, p23)
+        b2=PwmOut(self.mbed, p24)
+        self.m_left = Motor(a1, a2)
+        self.m_right = Motor(b1, b2)
+        self.an = AnalogIn(self.mbed, p20)
+        self.imu_vars = [RPCVariable(self.mbed,name) for name in imu_names]
+        self.enc_vars = [RPCVariable(self.mbed,name) for name in enc_names]
         self.rlock=threading.Lock()
 
     def cmd(self, left, right):
