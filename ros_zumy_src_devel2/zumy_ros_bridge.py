@@ -82,8 +82,8 @@ class ZumyROS:
   def run(self):
     i=0
     msg = Twist()
-    msg.linear.x = 250
-    msg.angular.z = 0
+    msg.linear.x = 1000
+    msg.angular.z = -1000
     self.cmd_callback_test(msg)
     while not rospy.is_shutdown() and i<100:
       i = i+1
@@ -112,11 +112,11 @@ class ZumyROS:
       # imu_msg.angular_velocity.z = 3.14 / 180.0 * imu_data[5]
       # self.imu_pub.publish(imu_msg)
       
-      # enc_msg = Int32()
-      # enc_msg.data = enc_data[1]
-      # self.r_enc_pub.publish(enc_msg)
-      # enc_msg.data = enc_data[0]
-      # self.l_enc_pub.publish(enc_msg)
+      enc_msg = Int32()
+      enc_msg.data = self.zumy.enc[1]
+      self.r_enc_pub.publish(enc_msg)
+      enc_msg.data = self.zumy.enc[0]
+      self.l_enc_pub.publish(enc_msg)
       # self.l_enc_prev_count = self.l_enc_count
       # self.r_enc_prev_count = self.r_enc_count
       # self.l_enc_count = enc_data[0]
@@ -159,6 +159,8 @@ class ZumyROS:
         self.zumy.cmd(pid_l,pid_r)
       elif self.feedforward:
         self.zumy.cmd(self.zumy.PWM_l, self.zumy.PWM_r)
+      else:
+        self.zumy.cmd(0,0)
       self.lock.release()
 
       self.rate.sleep()
@@ -178,8 +180,8 @@ class ZumyROS:
 if __name__ == '__main__':
   zr = ZumyROS()
   time.sleep(0.03)
-  zr.zumy.calibration()
-  zr.zumy.PWM_l = zr.zumy.feedforward(250, 'l', 'u')
-  zr.zumy.PWM_r = zr.zumy.feedforward(-250, 'r', 'd')
+  #zr.zumy.calibration()
+  #zr.zumy.PWM_l = zr.zumy.feedforward(250, 'l', 'u')
+  #zr.zumy.PWM_r = zr.zumy.feedforward(-250, 'r', 'd')
 
   zr.run()

@@ -90,7 +90,7 @@ class SerialRPC(mbed):
     def rpc(self, name, method, args):
         self.ser.write("/" + name + "/" + method + " " + " ".join(args) + "\n")
         # Wait necessary to prevent incomplete reads, tends to take ~0.0002s to read
-        time.sleep(0.002)
+        #time.sleep(0.002)
         rval = self.ser.readline().strip()
         return rval
 

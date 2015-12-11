@@ -68,9 +68,9 @@ class Zumy:
         self.v_desired_r_limit = [0.0,0.0]
         self.shutdown = False
         self.feedforward_flag = False
-        self.PID_l = PID(0.0002,0.00004,0.00012,0,0,100000,-100000)
-        self.PID_r = PID(0.0002,0.00008,0.00012,0,0,100000,-100000)
-        self.alpha = 1
+        self.PID_l = PID(0.0002,0.00004,0.00014,0,0,100000,-100000)
+        self.PID_r = PID(0.0002,0.00007,0.00025,0,0,100000,-100000)
+        self.alpha = 0.35
         self.PWM_l = 0
         self.PWM_r = 0
 
