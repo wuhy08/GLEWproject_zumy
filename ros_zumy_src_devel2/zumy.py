@@ -71,6 +71,8 @@ class Zumy:
         self.PID_l = PID(0.0002,0.00004,0.00012,0,0,100000,-100000)
         self.PID_r = PID(0.0002,0.00008,0.00012,0,0,100000,-100000)
         self.alpha = 1
+        self.PWM_l = 0
+        self.PWM_r = 0
 
     def cmd(self, left, right): #will take ~8ms
         self.rlock.acquire()
@@ -144,7 +146,7 @@ class Zumy:
 
 
     def calibration(self):
-      calibration_input = range(0,20)+(20,-1,-1)
+      calibration_input = range(0,20)+range(20,-1,-1)
       #calibration_input_neg = [-b for b in calibration_input_pos]
       calibration_repeat = 5
       calibration_step = 0.01
@@ -181,32 +183,32 @@ class Zumy:
       self.v_desired_r_limit = [min(cal_data_r_avg),max(cal_data_r_avg)]
 
 
-      def feedforward(self, desired, wheel, direction):
-        if wheel == 'l' and direction == 'u':
-          curve = self.cal_data_l_up
-        elif wheel == 'l' and direction == 'd':
-          curve = self.cal_data_l_dn
-        elif wheel == 'r' and direction == 'u':
-          curve = self.cal_data_r_up
-        elif wheel == 'r' and direction == 'd':
-          curve = self.cal_data_r_dn
-        x = np.linspace(-0.2, 0.2, 41)
-        return np.interp(desired, curve, x)
+    def feedforward(self, desired, wheel, direction):
+      if wheel == 'l' and direction == 'u':
+        curve = self.cal_data_l_up
+      elif wheel == 'l' and direction == 'd':
+        curve = self.cal_data_l_dn
+      elif wheel == 'r' and direction == 'u':
+        curve = self.cal_data_r_up
+      elif wheel == 'r' and direction == 'd':
+        curve = self.cal_data_r_dn
+      x = np.linspace(-0.2, 0.2, 41)
+      return np.interp(desired, curve, x)
 
-      def feedback(self, desired, feedback, curr_input, wheel, direction):
-        if wheel == 'l' and direction == 'u':
-          curve = self.cal_data_l_up
-        elif wheel == 'l' and direction == 'd':
-          curve = self.cal_data_l_dn
-        elif wheel == 'r' and direction == 'u':
-          curve = self.cal_data_r_up
-        elif wheel == 'r' and direction == 'd':
-          curve = self.cal_data_r_dn
-        err = desired - feedback
-        curr_input_pos = math.floor((curr_input+0.2)/0.01)
-        slope = (curve[curr_input_pos+1] - curve[curr_input_pos])/0.01
-        new_input = curr_input + err/slope
-        return new_input
+    def feedback(self, desired, feedback, curr_input, wheel, direction):
+      if wheel == 'l' and direction == 'u':
+        curve = self.cal_data_l_up
+      elif wheel == 'l' and direction == 'd':
+        curve = self.cal_data_l_dn
+      elif wheel == 'r' and direction == 'u':
+        curve = self.cal_data_r_up
+      elif wheel == 'r' and direction == 'd':
+        curve = self.cal_data_r_dn
+      err = desired - feedback
+      curr_input_pos = math.floor((curr_input+0.2)/0.01)
+      slope = (curve[curr_input_pos+1] - curve[curr_input_pos])/0.01
+      new_input = curr_input + err/slope
+      return new_input
 
       # def run(self):
       #   #self.calibration()

@@ -31,6 +31,7 @@ class ZumyROS:
     self.vl = 0
     self.vr = 0
     self.feedback = True
+    self.feedforward = False
     self.alpha = 0.8
     self.heartBeat = rospy.Publisher('/' + self.name + '/heartBeat', String, queue_size=5)
     self.imu_pub = rospy.Publisher('/' + self.name + '/imu', Imu, queue_size = 1)
@@ -156,8 +157,8 @@ class ZumyROS:
       self.lock.acquire()
       if self.feedback:
         self.zumy.cmd(pid_l,pid_r)
-      else:
-        self.zumy.cmd(self.vl, self.vr)
+      elif self.feedforward:
+        self.zumy.cmd(self.zumy.PWM_l, self.zumy.PWM_r)
       self.lock.release()
 
       self.rate.sleep()
@@ -177,4 +178,8 @@ class ZumyROS:
 if __name__ == '__main__':
   zr = ZumyROS()
   time.sleep(0.03)
+  zr.zumy.calibration()
+  zr.zumy.PWM_l = zr.zumy.feedforward(250, 'l', 'u')
+  zr.zumy.PWM_r = zr.zumy.feedforward(-250, 'r', 'd')
+
   zr.run()
