@@ -7,7 +7,7 @@ import socket,time, math, sys
 def send_spd(zumy, speed, l_list, r_list):
 	zumy.cmd(speed, -speed)
 	time.sleep(0.032)
-        enc = zumy.read_enc()
+    enc = zumy.read_enc()
 	l_list.append(enc[0])
 	r_list.append(enc[1])
 
