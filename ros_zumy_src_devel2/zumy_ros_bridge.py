@@ -12,13 +12,6 @@ import socket,time
 from PID_control import PID
 #import matplotlib.pyplot as plt
 
-def confined(number, cap):
-  if number>cap:
-    number = cap
-  elif number<-cap:
-    number = -cap
-  return number
-
 class ZumyROS:	
   def __init__(self):
     self.zumy = Zumy()
@@ -28,11 +21,9 @@ class ZumyROS:
     self.lock = Condition()
     self.rate = rospy.Rate(30)
     self.name = socket.gethostname()
-    self.vl = 0
-    self.vr = 0
+    self.vl_enc = 0
+    self.vr_enc = 0
     self.feedback = True
-    self.feedforward = False
-    self.alpha = 0.8
     self.heartBeat = rospy.Publisher('/' + self.name + '/heartBeat', String, queue_size=5)
     self.imu_pub = rospy.Publisher('/' + self.name + '/imu', Imu, queue_size = 1)
     self.r_enc_pub = rospy.Publisher('/' + self.name + '/r_enc', Int32, queue_size = 5)
@@ -62,22 +53,23 @@ class ZumyROS:
   def cmd_callback(self, msg):
     lv = 1
     la = 1
-    v = msg.linear.x
-    a = msg.angular.z
-    self.vr = lv*v - la*a
-    self.vl = lv*v + la*a
-    self.zumy.PID_l.setPoint(self.vl)
-    self.zumy.PID_r.setPoint(self.vr)
+    v_tr = msg.linear.x
+    omega_rot = msg.angular.z
+    zumy_width = 0.086 # distance between the center of two front wheels of zumy in meter
+    v_l = v_tr - omega_rot*zumy_width/2
+    v_r = v_tr + omega_rot*zumy_width/2
+    enc_cnt = 600 #encoder count per rev
+    wheel_radius = 
+    self.vl_enc = v_l*enc_cnt/(2*math.pi*wheel_radius)
+    self.vr_enc = v_r*enc_cnt/(2*math.pi*wheel_radius)
+    self.zumy.PID_l.setPoint(self.vl_enc)
+    self.zumy.PID_r.setPoint(self.vr_enc)
 
   def cmd_callback_test(self,msg):
     self.vl = msg.linear.x
     self.vr = msg.angular.z
     self.zumy.PID_l.setPoint(self.vl)
     self.zumy.PID_r.setPoint(self.vr)
-
-
-
-
 
   def run(self):
     i=0
@@ -87,8 +79,13 @@ class ZumyROS:
     self.cmd_callback_test(msg)
     while not rospy.is_shutdown() and i<100:
       i = i+1
+
+      #Get the feedback and update the feecback control
       self.zumy.update_enc_denc()
       self.zumy.update_time()
+      pid_l = self.zumy.PID_l.update(self.zumy.denc[0]/self.zumy.duration)
+      pid_r = self.zumy.PID_r.update(self.zumy.denc[1]/self.zumy.duration)
+
       # self.prevtimestamp = self.timestamp
       # self.timestamp = rospy.Time.now()
       # self.duration = (self.timestamp - self.prevtimestamp).to_sec()
@@ -112,43 +109,22 @@ class ZumyROS:
       # imu_msg.angular_velocity.z = 3.14 / 180.0 * imu_data[5]
       # self.imu_pub.publish(imu_msg)
       
+      #Publish current encoder value
       enc_msg = Int32()
       enc_msg.data = self.zumy.enc[1]
       self.r_enc_pub.publish(enc_msg)
       enc_msg.data = self.zumy.enc[0]
       self.l_enc_pub.publish(enc_msg)
-      # self.l_enc_prev_count = self.l_enc_count
-      # self.r_enc_prev_count = self.r_enc_count
-      # self.l_enc_count = enc_data[0]
-      # self.r_enc_count = enc_data[1]
-      # self.prev_l_enc_count_diff = self.l_enc_count_diff
-      # self.l_enc_count_diff = self.alpha*\
-      #           (self.l_enc_count - self.l_enc_prev_count)/\
-      #           self.duration + \
-      #           self.alpha*\
-      #           self.prev_l_enc_count_diff
-      # self.prev_r_enc_count_diff = self.r_enc_count_diff
-      # self.r_enc_count_diff = self.alpha*\
-      #           (self.r_enc_count - self.r_enc_prev_count)/\
-      #           self.duration + \
-      #           self.alpha*\
-      #           self.prev_r_enc_count_diff
-      pid_l = self.zumy.PID_l.update(self.zumy.denc[0]/self.zumy.duration)
-      pid_r = self.zumy.PID_r.update(self.zumy.denc[1]/self.zumy.duration)
-      #pid_l = confined(pid_l, 0.2)
-      #pid_r = confined(pid_r, 0.2)
-      # pid_l_pub = Float32()
-      # pid_r_pub = Float32()
+      #Publish current encoder difference value
+
       l_denc_pub = String()
       r_denc_pub = String()
       l_denc_pub.data = "%.2f" % (self.zumy.denc[0]/self.zumy.duration)
       r_denc_pub.data = "%.2f" % (self.zumy.denc[1]/self.zumy.duration)
-      # pid_l_pub.data = pid_l
-      # pid_r_pub.data = pid_r
-      # self.l_spd_pub.publish(pid_l_pub)
-      # self.r_spd_pub.publish(pid_r_pub)
       self.l_denc_pub.publish(l_denc_pub)
       self.r_denc_pub.publish(r_denc_pub)
+
+      #Append current encoder speed to save to txt file
       self.l_vel_list.append(self.zumy.denc[0]/self.zumy.duration)
       self.r_vel_list.append(self.zumy.denc[1]/self.zumy.duration)
 
@@ -157,8 +133,6 @@ class ZumyROS:
       self.lock.acquire()
       if self.feedback:
         self.zumy.cmd(pid_l,pid_r)
-      elif self.feedforward:
-        self.zumy.cmd(self.zumy.PWM_l, self.zumy.PWM_r)
       else:
         self.zumy.cmd(0,0)
       self.lock.release()
@@ -167,9 +141,6 @@ class ZumyROS:
 
     # If shutdown, turn off motors
     self.zumy.cmd(0,0)
-    #t=range(len(self.l_vel_list))
-    #plt.plot(t, self.r_vel_list)
-    #plt.show()
     f = open('/home/glew/coop_slam_workspace/src/ros_zumy/src/test.txt', 'w')
     for ii in range(len(self.l_vel_list)):
       f.write(("%.2f\t" % self.l_vel_list[ii]))
@@ -180,8 +151,4 @@ class ZumyROS:
 if __name__ == '__main__':
   zr = ZumyROS()
   time.sleep(0.03)
-  #zr.zumy.calibration()
-  #zr.zumy.PWM_l = zr.zumy.feedforward(250, 'l', 'u')
-  #zr.zumy.PWM_r = zr.zumy.feedforward(-250, 'r', 'd')
-
   zr.run()

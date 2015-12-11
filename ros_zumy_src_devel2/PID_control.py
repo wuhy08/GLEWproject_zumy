@@ -60,7 +60,7 @@ class PID:
 		Initilize the setpoint of PID
 		"""
 		self.set_point = set_point
-		self.Integrator=0
+		#self.Integrator=0
 		self.Derivator=0
 
 	def setIntegrator(self, Integrator):
