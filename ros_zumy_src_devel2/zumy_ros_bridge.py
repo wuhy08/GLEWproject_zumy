@@ -56,7 +56,7 @@ class ZumyROS:
     zumy_width = 0.086*8/4 # distance between the center of two front wheels of zumy in meter
     v_l = v_tr - omega_rot*zumy_width/2
     v_r = v_tr + omega_rot*zumy_width/2
-    enc_cnt = 300 #encoder count per rev
+    enc_cnt = 600 #encoder count per rev
     wheel_radius = 0.02 #Wheel radius in meter
     self.vl_enc = v_l*enc_cnt/(2*math.pi*wheel_radius)
     self.vr_enc = v_r*enc_cnt/(2*math.pi*wheel_radius)
@@ -70,13 +70,13 @@ class ZumyROS:
     self.zumy.PID_r.setPoint(self.vr)
 
   def run(self):
-    i=0
-    msg = Twist()
-    msg.linear.x = 0
-    msg.angular.z = -1
-    self.cmd_callback(msg)
-    time1 = time.time()
-    while not rospy.is_shutdown() and i<900:
+    # i=0
+    # msg = Twist()
+    # msg.linear.x = 0.01
+    # msg.angular.z = 0
+    # self.cmd_callback(msg)
+    # time1 = time.time()
+    while not rospy.is_shutdown():# and i<900:
       i = i+1
 
       #Get the feedback and update the feecback control
@@ -143,12 +143,12 @@ class ZumyROS:
     duration = time2-time1
     # If shutdown, turn off motors
     self.zumy.cmd(0,0)
-    f = open('/home/glew/coop_slam_workspace/src/ros_zumy/src/test.txt', 'w')
-    f.write(("%.2f\n" % duration))
-    for ii in range(len(self.l_vel_list)):
-      f.write(("%.2f\t" % self.l_vel_list[ii]))
-      f.write(("%.2f\n" % self.r_vel_list[ii]))
-    f.close()
+    # f = open('/home/glew/coop_slam_workspace/src/ros_zumy/src/test.txt', 'w')
+    # f.write(("%.2f\n" % duration))
+    # for ii in range(len(self.l_vel_list)):
+    #   f.write(("%.2f\t" % self.l_vel_list[ii]))
+    #   f.write(("%.2f\n" % self.r_vel_list[ii]))
+    # f.close()
 
 
 if __name__ == '__main__':
