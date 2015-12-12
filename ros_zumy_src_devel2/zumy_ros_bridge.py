@@ -8,7 +8,7 @@ from zumy import Zumy
 from std_msgs.msg import String,Header
 from std_msgs.msg import Int32, Float32, Duration
 from sensor_msgs.msg import Imu
-import socket,time
+import socket,time, math
 from PID_control import PID
 #import matplotlib.pyplot as plt
 
@@ -51,15 +51,13 @@ class ZumyROS:
     self.r_vel_list = []
 
   def cmd_callback(self, msg):
-    lv = 1
-    la = 1
     v_tr = msg.linear.x
     omega_rot = msg.angular.z
-    zumy_width = 0.086 # distance between the center of two front wheels of zumy in meter
+    zumy_width = 0.086*8/4 # distance between the center of two front wheels of zumy in meter
     v_l = v_tr - omega_rot*zumy_width/2
     v_r = v_tr + omega_rot*zumy_width/2
-    enc_cnt = 600 #encoder count per rev
-    wheel_radius = 
+    enc_cnt = 300 #encoder count per rev
+    wheel_radius = 0.02 #Wheel radius in meter
     self.vl_enc = v_l*enc_cnt/(2*math.pi*wheel_radius)
     self.vr_enc = v_r*enc_cnt/(2*math.pi*wheel_radius)
     self.zumy.PID_l.setPoint(self.vl_enc)
@@ -74,10 +72,11 @@ class ZumyROS:
   def run(self):
     i=0
     msg = Twist()
-    msg.linear.x = 1000
-    msg.angular.z = -1000
-    self.cmd_callback_test(msg)
-    while not rospy.is_shutdown() and i<100:
+    msg.linear.x = 0
+    msg.angular.z = -1
+    self.cmd_callback(msg)
+    time1 = time.time()
+    while not rospy.is_shutdown() and i<900:
       i = i+1
 
       #Get the feedback and update the feecback control
@@ -129,6 +128,7 @@ class ZumyROS:
       self.r_vel_list.append(self.zumy.denc[1]/self.zumy.duration)
 
       self.heartBeat.publish("I am alive from Glew!!")
+      print "Hello"
       
       self.lock.acquire()
       if self.feedback:
@@ -139,9 +139,12 @@ class ZumyROS:
 
       self.rate.sleep()
 
+    time2 = time.time()
+    duration = time2-time1
     # If shutdown, turn off motors
     self.zumy.cmd(0,0)
     f = open('/home/glew/coop_slam_workspace/src/ros_zumy/src/test.txt', 'w')
+    f.write(("%.2f\n" % duration))
     for ii in range(len(self.l_vel_list)):
       f.write(("%.2f\t" % self.l_vel_list[ii]))
       f.write(("%.2f\n" % self.r_vel_list[ii]))
